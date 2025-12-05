@@ -1,13 +1,28 @@
 package analyze
 
-import "dnsScanner/models"
+import (
+	"dnsScanner/models"
+	"fmt"
+	"strings"
+)
 
 type baseAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *baseAnalyzer) Execute(_ []interface{}, _ bool) []models.AnalyzerResults {
+func (c *baseAnalyzer) Execute(parsedSpf []interface{}, _ bool) []models.AnalyzerResults {
 	var errors []models.AnalyzerResults
+	result := ""
+
+	for _, a := range parsedSpf {
+		fmt.Printf("Type of a: %T\n", a)
+		if val, ok := a.(models.ToString); ok {
+			fmt.Println("Here!" + result)
+			result += val.ToString() + " "
+		}
+	}
+	result = strings.TrimSpace(result)
+	fmt.Println("Fixed SPF: " + result)
 
 	return errors
 }
