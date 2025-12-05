@@ -2,7 +2,6 @@ package analyze
 
 import (
 	"dnsScanner/models"
-	"fmt"
 	"strings"
 )
 
@@ -14,14 +13,20 @@ func (c *baseAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analy
 	var errors []models.AnalyzerResults
 	result := ""
 
-	for _, a := range analysisInfo.ParsedSpf {
-		fmt.Printf("Type of a: %T\n", a)
-		if val, ok := a.(models.SpfFragment); ok {
-			result += val.ToString() + " "
+	if analysisInfo.FixRecord {
+		for _, a := range analysisInfo.ParsedSpf {
+			result += a.ToString() + " "
 		}
+		result = strings.TrimSpace(result)
+
+		errors = append(errors, models.AnalyzerResults{
+			Severity:    models.INFO,
+			Rule:        models.FIXED_RECORD,
+			Fixed:       true,
+			FixedRecord: result,
+			Message:     "",
+		})
 	}
-	result = strings.TrimSpace(result)
-	fmt.Println("Fixed SPF: " + result)
 
 	return errors
 }

@@ -46,7 +46,6 @@ func (c *allAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analyz
 			}
 		}
 		if headers[0].value.Qualifier == models.Pass {
-			// AG TODO:  Add fix for this
 			errors = append(errors, models.AnalyzerResults{
 				Severity:    models.WARNING,
 				Rule:        models.PASS_ALL,

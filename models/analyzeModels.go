@@ -27,6 +27,7 @@ const (
 	TOTAL_FAILED_MORE_THAN_2 SpfValidationRule = 13
 	BIG_IP_RANGE             SpfValidationRule = 14
 	DUPLICATE_MODIFIER       SpfValidationRule = 15
+	FIXED_RECORD             SpfValidationRule = 16
 )
 
 type ValidationSeverity int
@@ -34,6 +35,7 @@ type ValidationSeverity int
 const (
 	ERROR   ValidationSeverity = 1
 	WARNING ValidationSeverity = 2
+	INFO    ValidationSeverity = 3
 )
 
 type RecordReturn interface{}

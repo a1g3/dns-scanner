@@ -2,8 +2,9 @@ package parse
 
 import (
 	"dnsScanner/models"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseSpfRecord_BareString(t *testing.T) {
