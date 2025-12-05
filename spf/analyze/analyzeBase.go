@@ -10,11 +10,11 @@ type baseAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *baseAnalyzer) Execute(parsedSpf []interface{}, _ bool) []models.AnalyzerResults {
+func (c *baseAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	var errors []models.AnalyzerResults
 	result := ""
 
-	for _, a := range parsedSpf {
+	for _, a := range analysisInfo.ParsedSpf {
 		fmt.Printf("Type of a: %T\n", a)
 		if val, ok := a.(models.ToString); ok {
 			fmt.Println("Here!" + result)

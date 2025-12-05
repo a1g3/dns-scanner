@@ -13,11 +13,11 @@ type headerAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *headerAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+func (c *headerAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	var headers []headerPosition
 	var errors []models.AnalyzerResults
 
-	for i, a := range parsedSpf {
+	for i, a := range analysisInfo.ParsedSpf {
 		switch fragment := a.(type) {
 		case models.HeaderSpfFragment:
 			headers = append(headers, headerPosition{
@@ -51,7 +51,7 @@ func (c *headerAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []mode
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
+	results := append(c.next.Execute(analysisInfo), errors...)
 
 	return results
 }

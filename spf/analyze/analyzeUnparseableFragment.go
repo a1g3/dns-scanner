@@ -9,12 +9,12 @@ type unparseableAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *unparseableAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+func (c *unparseableAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	var headers []models.UnparseableSpfFragment
 	var errors []models.AnalyzerResults
 	var unparseableIndexes []int
 
-	for index, a := range parsedSpf {
+	for index, a := range analysisInfo.ParsedSpf {
 		switch fragment := a.(type) {
 		case models.UnparseableSpfFragment:
 			headers = append(headers, fragment)
@@ -30,14 +30,14 @@ func (c *unparseableAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) [
 		})
 	}
 
-	if unparseableIndexes != nil && fixErrors {
+	if unparseableIndexes != nil && analysisInfo.FixRecord {
 		for i := len(unparseableIndexes) - 1; i >= 0; i-- {
 			index := unparseableIndexes[i]
-			parsedSpf = append(parsedSpf[:index], parsedSpf[index+1:]...)
+			analysisInfo.ParsedSpf = append(analysisInfo.ParsedSpf[:index], analysisInfo.ParsedSpf[index+1:]...)
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
+	results := append(c.next.Execute(analysisInfo), errors...)
 
 	return results
 }

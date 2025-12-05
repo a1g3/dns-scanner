@@ -13,12 +13,12 @@ type onlyOneOfEachModifierAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *onlyOneOfEachModifierAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+func (c *onlyOneOfEachModifierAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	var explanationHeaders []explanationPosition
 	var redirectHeaders []redirectPosition
 	var errors []models.AnalyzerResults
 
-	for i, a := range parsedSpf {
+	for i, a := range analysisInfo.ParsedSpf {
 		switch fragment := a.(type) {
 		case models.ExplanationSpfFragment:
 			explanationHeaders = append(explanationHeaders, explanationPosition{
@@ -49,7 +49,7 @@ func (c *onlyOneOfEachModifierAnalyzer) Execute(parsedSpf []interface{}, fixErro
 		})
 	}
 
-	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
+	results := append(c.next.Execute(analysisInfo), errors...)
 
 	return results
 }

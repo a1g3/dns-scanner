@@ -37,8 +37,13 @@ type AnalyzerResults struct {
 	RecordReturn
 }
 
+type AnalysisInfo struct {
+	ParsedSpf []interface{}
+	FixRecord bool
+}
+
 type ISPFAnalyzer interface {
-	Execute(parsedSpf []interface{}, fixErrors bool) []AnalyzerResults
+	Execute(analysisInfo *AnalysisInfo) []AnalyzerResults
 	SetNext(worker ISPFAnalyzer)
 }
 

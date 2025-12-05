@@ -8,11 +8,11 @@ type modifiedPositionAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *modifiedPositionAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+func (c *modifiedPositionAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	hasSeenModifier := false
 	var errors []models.AnalyzerResults
 
-	for _, a := range parsedSpf {
+	for _, a := range analysisInfo.ParsedSpf {
 		switch a.(type) {
 		case models.ExplanationSpfFragment, models.RedirectSpfFragment:
 			hasSeenModifier = true
@@ -30,7 +30,7 @@ func (c *modifiedPositionAnalyzer) Execute(parsedSpf []interface{}, fixErrors bo
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
+	results := append(c.next.Execute(analysisInfo), errors...)
 
 	return results
 }

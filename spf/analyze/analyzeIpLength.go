@@ -19,12 +19,12 @@ type ipLengthAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *ipLengthAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+func (c *ipLengthAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	var errors []models.AnalyzerResults
 	var ip4mechanisms []ip4Position
 	var ip6mechanisms []ip6Position
 
-	for i, a := range parsedSpf {
+	for i, a := range analysisInfo.ParsedSpf {
 		switch fragment := a.(type) {
 		case models.Ip4SpfFragment:
 			ip4mechanisms = append(ip4mechanisms, ip4Position{
@@ -61,7 +61,7 @@ func (c *ipLengthAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []mo
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
+	results := append(c.next.Execute(analysisInfo), errors...)
 
 	return results
 }

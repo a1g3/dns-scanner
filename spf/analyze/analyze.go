@@ -3,6 +3,11 @@ package analyze
 import "dnsScanner/models"
 
 func AnalyzeSpf(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+	analysisInfo := models.AnalysisInfo{
+		ParsedSpf: parsedSpf,
+		FixRecord: fixErrors,
+	}
+
 	base := &baseAnalyzer{}
 
 	header := &headerAnalyzer{}
@@ -29,5 +34,5 @@ func AnalyzeSpf(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResult
 	modifiedPosition := &modifiedPositionAnalyzer{}
 	modifiedPosition.SetNext(onlyOneOfEachModifier)
 
-	return modifiedPosition.Execute(parsedSpf, fixErrors)
+	return modifiedPosition.Execute(analysisInfo)
 }

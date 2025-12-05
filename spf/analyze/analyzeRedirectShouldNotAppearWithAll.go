@@ -13,12 +13,12 @@ type redirectShouldNotAppearWithAllAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *redirectShouldNotAppearWithAllAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+func (c *redirectShouldNotAppearWithAllAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	var allHeaders []allPosition
 	var redirectHeaders []redirectPosition
 	var errors []models.AnalyzerResults
 
-	for i, a := range parsedSpf {
+	for i, a := range analysisInfo.ParsedSpf {
 		switch fragment := a.(type) {
 		case models.AllSpfFragment:
 			allHeaders = append(allHeaders, allPosition{
@@ -41,7 +41,7 @@ func (c *redirectShouldNotAppearWithAllAnalyzer) Execute(parsedSpf []interface{}
 		})
 	}
 
-	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
+	results := append(c.next.Execute(analysisInfo), errors...)
 
 	return results
 }

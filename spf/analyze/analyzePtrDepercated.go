@@ -8,12 +8,12 @@ type ptrDepercatedAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *ptrDepercatedAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
+func (c *ptrDepercatedAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	var errors []models.AnalyzerResults
 	hasPtr := false
 
 	ptr_index := 0
-	for index, a := range parsedSpf {
+	for index, a := range analysisInfo.ParsedSpf {
 		switch a.(type) {
 		case models.PtrSpfFragment:
 			hasPtr = true
@@ -29,12 +29,11 @@ func (c *ptrDepercatedAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool)
 		})
 	}
 
-	if hasPtr && fixErrors {
-		parsedSpf = append(parsedSpf[:ptr_index], parsedSpf[ptr_index+1:]...)
+	if hasPtr && analysisInfo.FixRecord {
+		analysisInfo.ParsedSpf = append(analysisInfo.ParsedSpf[:ptr_index], analysisInfo.ParsedSpf[ptr_index+1:]...)
 	}
 
-	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
-
+	results := append(c.next.Execute(analysisInfo), errors...)
 	return results
 }
 
