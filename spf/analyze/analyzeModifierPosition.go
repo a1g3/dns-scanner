@@ -8,7 +8,7 @@ type modifiedPositionAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *modifiedPositionAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResults {
+func (c *modifiedPositionAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
 	hasSeenModifier := false
 	var errors []models.AnalyzerResults
 
@@ -30,7 +30,7 @@ func (c *modifiedPositionAnalyzer) Execute(parsedSpf []interface{}) []models.Ana
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf), errors...)
+	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
 
 	return results
 }

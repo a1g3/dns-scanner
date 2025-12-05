@@ -19,7 +19,7 @@ type ipLengthAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *ipLengthAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResults {
+func (c *ipLengthAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
 	var errors []models.AnalyzerResults
 	var ip4mechanisms []ip4Position
 	var ip6mechanisms []ip6Position
@@ -61,7 +61,7 @@ func (c *ipLengthAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerRes
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf), errors...)
+	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
 
 	return results
 }

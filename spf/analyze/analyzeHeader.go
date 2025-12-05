@@ -13,7 +13,7 @@ type headerAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *headerAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResults {
+func (c *headerAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
 	var headers []headerPosition
 	var errors []models.AnalyzerResults
 
@@ -51,7 +51,7 @@ func (c *headerAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResul
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf), errors...)
+	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
 
 	return results
 }

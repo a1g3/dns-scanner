@@ -13,7 +13,7 @@ type onlyOneOfEachModifierAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *onlyOneOfEachModifierAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResults {
+func (c *onlyOneOfEachModifierAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
 	var explanationHeaders []explanationPosition
 	var redirectHeaders []redirectPosition
 	var errors []models.AnalyzerResults
@@ -49,7 +49,7 @@ func (c *onlyOneOfEachModifierAnalyzer) Execute(parsedSpf []interface{}) []model
 		})
 	}
 
-	results := append(c.next.Execute(parsedSpf), errors...)
+	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
 
 	return results
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -29,11 +30,36 @@ func scanDns(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func validate_spf(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	text := vars["text"]
+
+	results := workers.ValidateSpf(text)
+	data, err := json.Marshal(mapToApiModel(text, results))
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		_, err = w.Write(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
+func pong(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	_, _ = w.Write([]byte("pong: " + time.Now().Format(time.DateTime)))
+}
+
 func handleRequests() {
 	log.Println("STARTING API")
 	myRouter := mux.NewRouter().StrictSlash(true)
 	// replace http.HandleFunc with myRouter.HandleFunc
-	myRouter.HandleFunc("/api/{domain}", scanDns)
+	myRouter.HandleFunc("/api/spf/validate/{text}", validate_spf)
+	myRouter.HandleFunc("/api/scan/{domain}", scanDns)
+	myRouter.HandleFunc("/api/ping", pong)
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 

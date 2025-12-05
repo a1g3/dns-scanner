@@ -34,29 +34,7 @@ func (c *spfTxtWorker) Execute(information models.WorkerInformation) []models.Dn
 		switch txt := a.(type) {
 		case *dns.TXT:
 			txtString := strings.Join(txt.Txt, "")
-			if strings.HasPrefix(txtString, "v=spf1") {
-				total_number_lookups = 0
-				total_number_of_failed_lookups = 0
-				parserResults := parseSpfRecord(information.Client, information.DnsServer, dns.TypeTXT, information.Hostname, txtString, []string{information.Hostname})
-
-				if total_number_lookups > 10 {
-					parserResults.Validation = append(parserResults.Validation, models.AnalyzerResults{
-						Severity: models.ERROR,
-						Rule:     models.MORE_THAN_10_LOOKUPS,
-						Message:  fmt.Sprintf("There were %d lookups", total_number_lookups),
-					})
-				}
-
-				if total_number_of_failed_lookups > 2 {
-					parserResults.Validation = append(parserResults.Validation, models.AnalyzerResults{
-						Severity: models.WARNING,
-						Rule:     models.TOTAL_FAILED_MORE_THAN_2,
-						Message:  fmt.Sprintf("There were %d failed lookups", total_number_of_failed_lookups),
-					})
-				}
-
-				results = append(results, parserResults)
-			}
+			results = c.ParseAndAnalyzeSpf(txtString, information, results)
 		}
 	}
 
@@ -66,7 +44,34 @@ func (c *spfTxtWorker) Execute(information models.WorkerInformation) []models.Dn
 	return previousResults
 }
 
-func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain string, spf string, domains []string) models.SpfResult {
+func (*spfTxtWorker) ParseAndAnalyzeSpf(txtString string, information models.WorkerInformation, results []models.SpfResult) []models.SpfResult {
+	if strings.HasPrefix(txtString, "v=spf1") {
+		total_number_lookups = 0
+		total_number_of_failed_lookups = 0
+		parserResults := parseSpfRecord(information.Client, information.DnsServer, dns.TypeTXT, information.Hostname, txtString, []string{information.Hostname}, information.FixErrors)
+
+		if total_number_lookups > 10 {
+			parserResults.Validation = append(parserResults.Validation, models.AnalyzerResults{
+				Severity: models.ERROR,
+				Rule:     models.MORE_THAN_10_LOOKUPS,
+				Message:  fmt.Sprintf("There were %d lookups", total_number_lookups),
+			})
+		}
+
+		if total_number_of_failed_lookups > 2 {
+			parserResults.Validation = append(parserResults.Validation, models.AnalyzerResults{
+				Severity: models.WARNING,
+				Rule:     models.TOTAL_FAILED_MORE_THAN_2,
+				Message:  fmt.Sprintf("There were %d failed lookups", total_number_of_failed_lookups),
+			})
+		}
+
+		results = append(results, parserResults)
+	}
+	return results
+}
+
+func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain string, spf string, domains []string, fixErrors bool) models.SpfResult {
 	info := parse.ParseSpf(spf)
 	var includes []models.IncludeSpfFragment
 	var aSpf []models.ASpf
@@ -74,7 +79,7 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 	var existsSpf []models.ASpf
 	var redirects []models.RedirectSpfFragment
 
-	validation := analyze.AnalyzeSpf(info)
+	validation := analyze.AnalyzeSpf(info, fixErrors)
 	number := 0
 
 	for _, a := range info {
@@ -194,7 +199,7 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 		if a.ContainsMacros {
 			parsedRecord.Includes = append(parsedRecord.Includes, models.SpfResult{Domain: a.Contents, Raw: a.Raw, NumberOfLookups: 0, Validation: []models.AnalyzerResults{}})
 		} else {
-			parsedRecord.Includes = append(parsedRecord.Includes, nsLookup(client, dnsServer, dnsType, a.Contents, domains))
+			parsedRecord.Includes = append(parsedRecord.Includes, nsLookup(client, dnsServer, dnsType, a.Contents, domains, false))
 		}
 	}
 
@@ -202,7 +207,7 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 		if a.ContainsMacros {
 			parsedRecord.Redirects = append(parsedRecord.Redirects, models.SpfResult{Domain: a.Domain, Raw: a.Raw, NumberOfLookups: 0, Validation: []models.AnalyzerResults{}})
 		} else {
-			parsedRecord.Redirects = append(parsedRecord.Redirects, nsLookup(client, dnsServer, dnsType, a.Domain, domains))
+			parsedRecord.Redirects = append(parsedRecord.Redirects, nsLookup(client, dnsServer, dnsType, a.Domain, domains, false))
 		}
 	}
 
@@ -218,7 +223,7 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func nsLookup(client *dns.Client, dnsServer string, dnsType uint16, domain string, domains []string) models.SpfResult {
+func nsLookup(client *dns.Client, dnsServer string, dnsType uint16, domain string, domains []string, fixErrors bool) models.SpfResult {
 	m := new(dns.Msg)
 	fqdn := dns.Fqdn(domain)
 	m.SetQuestion(fqdn, dnsType)
@@ -294,7 +299,7 @@ func nsLookup(client *dns.Client, dnsServer string, dnsType uint16, domain strin
 
 	domains = append(domains, fqdn)
 
-	return parseSpfRecord(client, dnsServer, dnsType, domain, spfTxt, domains)
+	return parseSpfRecord(client, dnsServer, dnsType, domain, spfTxt, domains, fixErrors)
 }
 
 func (c *spfTxtWorker) SetNext(worker models.IDNSWorker) {

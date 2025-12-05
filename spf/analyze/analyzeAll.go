@@ -2,7 +2,6 @@ package analyze
 
 import (
 	"dnsScanner/models"
-	"fmt"
 )
 
 type allPosition struct {
@@ -14,7 +13,7 @@ type allAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *allAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResults {
+func (c *allAnalyzer) Execute(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
 	var headers []allPosition
 	var errors []models.AnalyzerResults
 
@@ -38,7 +37,7 @@ func (c *allAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResults 
 					errors = append(errors, models.AnalyzerResults{
 						Severity: models.WARNING,
 						Rule:     models.MECH_AFTER_ALL,
-						Message:  fmt.Sprint("Mechanisms after all will be ignored."),
+						Message:  "Mechanisms after all will be ignored.",
 					})
 				}
 			}
@@ -52,7 +51,7 @@ func (c *allAnalyzer) Execute(parsedSpf []interface{}) []models.AnalyzerResults 
 		}
 	}
 
-	results := append(c.next.Execute(parsedSpf), errors...)
+	results := append(c.next.Execute(parsedSpf, fixErrors), errors...)
 
 	return results
 }

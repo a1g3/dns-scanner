@@ -6,7 +6,7 @@ type baseAnalyzer struct {
 	next models.ISPFAnalyzer
 }
 
-func (c *baseAnalyzer) Execute(_ []interface{}) []models.AnalyzerResults {
+func (c *baseAnalyzer) Execute(_ []interface{}, _ bool) []models.AnalyzerResults {
 	var errors []models.AnalyzerResults
 
 	return errors

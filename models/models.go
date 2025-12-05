@@ -10,6 +10,7 @@ type WorkerInformation struct {
 	Hostname  string
 	Client    *dns.Client
 	DnsServer string
+	FixErrors bool
 }
 
 type OldSpfWorkerResult struct {

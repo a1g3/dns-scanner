@@ -47,3 +47,27 @@ func ScanDns(domain string) []models.DnsWorkerResults {
 
 	return ns.execute(host)
 }
+
+func ValidateSpf(text string) []models.DnsWorkerResults {
+	config, _ := dns.ClientConfigFromFile(os.Getenv("DNSSCAN_RESOLV_PATH"))
+	c := new(dns.Client)
+	c.Net = "tcp"
+
+	base := &baseWorker{}
+
+	spfNew := &spfTxtWorker{}
+	spfNew.SetNext(base)
+
+	fmt.Printf("=== Starting Validation for %s ===\n", text)
+
+	host := models.WorkerInformation{
+		Client:    c,
+		DnsServer: net.JoinHostPort(config.Servers[0], config.Port),
+		FixErrors: true,
+	}
+	workerResult := models.SpfWorkerResult{}
+	workerResult.Results = []models.SpfResult{}
+	workerResult.Results = spfNew.ParseAndAnalyzeSpf(text, host, []models.SpfResult{})
+
+	return []models.DnsWorkerResults{workerResult}
+}

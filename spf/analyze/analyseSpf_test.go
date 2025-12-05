@@ -11,7 +11,7 @@ func TestAnalyzeSpfRecord_ValidHeader(t *testing.T) {
 	var fragments []interface{}
 	fragments = append(fragments, models.HeaderSpfFragment{Contents: "v=spf1"})
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	assert.Empty(t, results)
 }
@@ -19,7 +19,7 @@ func TestAnalyzeSpfRecord_ValidHeader(t *testing.T) {
 func TestAnalyzeSpfRecord_NoHeaders(t *testing.T) {
 	var fragments []interface{}
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.NO_HEADER, error.Rule)
@@ -32,7 +32,7 @@ func TestAnalyzeSpfRecord_MultipleHeaders(t *testing.T) {
 	fragments = append(fragments, models.HeaderSpfFragment{Contents: "v=spf1"})
 	fragments = append(fragments, models.HeaderSpfFragment{Contents: "v=spf1"})
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.MULTIPLE_HEADERS, error.Rule)
@@ -45,7 +45,7 @@ func TestAnalyzeSpfRecord_HeaderNotFirst(t *testing.T) {
 	fragments = append(fragments, models.ASpfFragment{})
 	fragments = append(fragments, models.HeaderSpfFragment{Contents: "v=spf1"})
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.HEADER_NOT_FIRST, error.Rule)
@@ -61,7 +61,7 @@ func TestAnalyzeSpfRecord_UnparseableFragment(t *testing.T) {
 	fragments = append(fragments, models.HeaderSpfFragment{Contents: "v=spf1"})
 	fragments = append(fragments, frag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.UNKNOWN_MECH, error.Rule)
@@ -76,7 +76,7 @@ func TestAnalyzeSpfRecord_UnparseableFragmentNoHeader(t *testing.T) {
 
 	fragments = append(fragments, frag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.NO_HEADER, error.Rule)
@@ -102,7 +102,7 @@ func TestAnalyzeSpfRecord_AllIsLastElement(t *testing.T) {
 	fragments = append(fragments, aFrag)
 	fragments = append(fragments, allFrag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	assert.Empty(t, results)
 }
@@ -120,7 +120,7 @@ func TestAnalyzeSpfRecord_AllIsNotLastElement(t *testing.T) {
 	fragments = append(fragments, allFrag)
 	fragments = append(fragments, aFrag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.MECH_AFTER_ALL, error.Rule)
@@ -142,7 +142,7 @@ func TestAnalyzeSpfRecord_ModifiersAfterAll(t *testing.T) {
 	fragments = append(fragments, allFrag)
 	fragments = append(fragments, e1)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	assert.Empty(t, results)
 }
@@ -156,7 +156,7 @@ func TestAnalyzeSpfRecord_PassAll(t *testing.T) {
 	fragments = append(fragments, models.HeaderSpfFragment{Contents: "v=spf1"})
 	fragments = append(fragments, allFrag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.PASS_ALL, error.Rule)
@@ -172,7 +172,7 @@ func TestAnalyzeSpfRecord_HasPtrRecord(t *testing.T) {
 	fragments = append(fragments, models.HeaderSpfFragment{Contents: "v=spf1"})
 	fragments = append(fragments, allFrag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.DEPRECATED_PTR, error.Rule)
@@ -192,7 +192,7 @@ func TestAnalyzeSpfRecord_RedirectAndAll(t *testing.T) {
 	fragments = append(fragments, redirect)
 	fragments = append(fragments, allFrag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	error := results[0]
 	assert.Equal(t, models.ALL_WITH_REDIRECT, error.Rule)
@@ -293,7 +293,7 @@ func TestAnalyzeSpfRecord_NoDuplicateModifiers(t *testing.T) {
 	fragments = append(fragments, r1)
 	fragments = append(fragments, e1)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	assert.Equal(t, 0, len(results))
 }
@@ -323,7 +323,7 @@ func TestAnalyzeSpfRecord_DuplicateModifiers(t *testing.T) {
 	fragments = append(fragments, e1)
 	fragments = append(fragments, e2)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	assert.Equal(t, 2, len(results))
 
@@ -352,7 +352,7 @@ func TestAnalyzeSpfRecord_MechanismsAfterModifiers(t *testing.T) {
 	fragments = append(fragments, e1)
 	fragments = append(fragments, allFrag)
 
-	results := AnalyzeSpf(fragments)
+	results := AnalyzeSpf(fragments, false)
 
 	assert.Equal(t, 1, len(results))
 

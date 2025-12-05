@@ -31,7 +31,7 @@ func (c *spfOldWorker) Execute(information models.WorkerInformation) []models.Dn
 			total_number_lookups = 0
 			total_number_of_failed_lookups = 0
 
-			parserResults := parseSpfRecord(information.Client, information.DnsServer, dns.TypeSPF, information.Hostname, txtString, []string{information.Hostname})
+			parserResults := parseSpfRecord(information.Client, information.DnsServer, dns.TypeSPF, information.Hostname, txtString, []string{information.Hostname}, information.FixErrors)
 
 			if total_number_lookups > 10 {
 				parserResults.Validation = append(parserResults.Validation, models.AnalyzerResults{

@@ -38,7 +38,7 @@ type AnalyzerResults struct {
 }
 
 type ISPFAnalyzer interface {
-	Execute(parsedSpf []interface{}) []AnalyzerResults
+	Execute(parsedSpf []interface{}, fixErrors bool) []AnalyzerResults
 	SetNext(worker ISPFAnalyzer)
 }
 
