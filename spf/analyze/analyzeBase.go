@@ -16,8 +16,7 @@ func (c *baseAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analy
 
 	for _, a := range analysisInfo.ParsedSpf {
 		fmt.Printf("Type of a: %T\n", a)
-		if val, ok := a.(models.ToString); ok {
-			fmt.Println("Here!" + result)
+		if val, ok := a.(models.SpfFragment); ok {
 			result += val.ToString() + " "
 		}
 	}

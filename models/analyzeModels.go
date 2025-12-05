@@ -2,6 +2,15 @@ package models
 
 type SpfValidationRule int
 
+type ParsedSpfFragment interface {
+	ToString() string
+}
+
+type ISPFParser interface {
+	Execute(raw string, fragment string, qualifier Qualifier) ParsedSpfFragment
+	SetNext(worker ISPFParser)
+}
+
 const (
 	NO_HEADER                SpfValidationRule = 1
 	MULTIPLE_HEADERS         SpfValidationRule = 2
@@ -30,15 +39,17 @@ const (
 type RecordReturn interface{}
 
 type AnalyzerResults struct {
-	Severity ValidationSeverity
-	Rule     SpfValidationRule
-	Message  string
+	Severity    ValidationSeverity
+	Rule        SpfValidationRule
+	Fixed       bool
+	FixedRecord string
+	Message     string
 
 	RecordReturn
 }
 
 type AnalysisInfo struct {
-	ParsedSpf []interface{}
+	ParsedSpf []ParsedSpfFragment
 	FixRecord bool
 }
 

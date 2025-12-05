@@ -2,12 +2,7 @@ package analyze
 
 import "dnsScanner/models"
 
-func AnalyzeSpf(parsedSpf []interface{}, fixErrors bool) []models.AnalyzerResults {
-	analysisInfo := models.AnalysisInfo{
-		ParsedSpf: parsedSpf,
-		FixRecord: fixErrors,
-	}
-
+func AnalyzeSpf(analysisInfo *models.AnalysisInfo) []models.AnalyzerResults {
 	base := &baseAnalyzer{}
 
 	header := &headerAnalyzer{}

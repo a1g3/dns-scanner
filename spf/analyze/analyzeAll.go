@@ -34,19 +34,25 @@ func (c *allAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analyz
 				case models.ExplanationSpfFragment, models.RedirectSpfFragment, models.UnparseableSpfFragment:
 					continue
 				default:
+					// AG TODO:  Add fix for this
 					errors = append(errors, models.AnalyzerResults{
-						Severity: models.WARNING,
-						Rule:     models.MECH_AFTER_ALL,
-						Message:  "Mechanisms after all will be ignored.",
+						Severity:    models.WARNING,
+						Rule:        models.MECH_AFTER_ALL,
+						Fixed:       true,
+						FixedRecord: "",
+						Message:     "Mechanisms after all will be ignored.",
 					})
 				}
 			}
 		}
 		if headers[0].value.Qualifier == models.Pass {
+			// AG TODO:  Add fix for this
 			errors = append(errors, models.AnalyzerResults{
-				Severity: models.WARNING,
-				Rule:     models.PASS_ALL,
-				Message:  "Check the +all to ensure this is intended!",
+				Severity:    models.WARNING,
+				Rule:        models.PASS_ALL,
+				Fixed:       false,
+				FixedRecord: "",
+				Message:     "Check the +all to ensure this is intended!",
 			})
 		}
 	}

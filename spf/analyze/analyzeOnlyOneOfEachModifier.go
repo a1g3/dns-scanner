@@ -35,17 +35,21 @@ func (c *onlyOneOfEachModifierAnalyzer) Execute(analysisInfo *models.AnalysisInf
 
 	if len(redirectHeaders) > 1 {
 		errors = append(errors, models.AnalyzerResults{
-			Severity: models.ERROR,
-			Rule:     models.DUPLICATE_MODIFIER,
-			Message:  "Only one redirect modifier can appear in a SPF record!",
+			Severity:    models.ERROR,
+			Rule:        models.DUPLICATE_MODIFIER,
+			Fixed:       false,
+			FixedRecord: "",
+			Message:     "Only one redirect modifier can appear in a SPF record!",
 		})
 	}
 
 	if len(explanationHeaders) > 1 {
 		errors = append(errors, models.AnalyzerResults{
-			Severity: models.ERROR,
-			Rule:     models.DUPLICATE_MODIFIER,
-			Message:  "Only one explanation modifier can appear in a SPF record!",
+			Severity:    models.ERROR,
+			Rule:        models.DUPLICATE_MODIFIER,
+			Fixed:       false,
+			FixedRecord: "",
+			Message:     "Only one explanation modifier can appear in a SPF record!",
 		})
 	}
 

@@ -23,10 +23,13 @@ func (c *unparseableAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []model
 	}
 
 	for _, a := range headers {
+		// AG TODO:  Add fix for this
 		errors = append(errors, models.AnalyzerResults{
-			Severity: models.WARNING,
-			Rule:     models.UNKNOWN_MECH,
-			Message:  fmt.Sprintf("Unknown fragment \"%s\"", a.Raw),
+			Severity:    models.WARNING,
+			Rule:        models.UNKNOWN_MECH,
+			Fixed:       true,
+			FixedRecord: "",
+			Message:     fmt.Sprintf("Unknown fragment \"%s\"", a.Raw),
 		})
 	}
 

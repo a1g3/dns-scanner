@@ -79,7 +79,12 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 	var existsSpf []models.ASpf
 	var redirects []models.RedirectSpfFragment
 
-	validation := analyze.AnalyzeSpf(info, fixErrors)
+	var analysisInfo = &models.AnalysisInfo{
+		ParsedSpf: info,
+		FixRecord: fixErrors,
+	}
+
+	validation := analyze.AnalyzeSpf(analysisInfo)
 	number := 0
 
 	for _, a := range info {

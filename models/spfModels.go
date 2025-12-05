@@ -5,14 +5,10 @@ import (
 	"net"
 )
 
-type ToString interface {
-	ToString() string
-}
-
 type SpfFragment struct {
 	Raw string
 
-	ToString
+	ParsedSpfFragment
 }
 
 type SpfMechanism struct {
@@ -27,7 +23,7 @@ type IncludeSpfFragment struct {
 	SpfMechanism
 }
 
-func (include *IncludeSpfFragment) ToString() string {
+func (include IncludeSpfFragment) ToString() string {
 	return fmt.Sprintf("%sinclude:%s", qualifierToString(include.Qualifier), include.Contents)
 }
 

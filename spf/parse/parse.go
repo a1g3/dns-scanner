@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-func ParseSpf(record string) []interface{} {
-	var parsedRecords []interface{}
+func ParseSpf(record string) []models.ParsedSpfFragment {
+	var parsedRecords []models.ParsedSpfFragment
 
 	fragments := strings.Split(record, " ")
 

@@ -23,13 +23,16 @@ func (c *ptrDepercatedAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []mod
 
 	if hasPtr {
 		errors = append(errors, models.AnalyzerResults{
-			Severity: models.ERROR,
-			Rule:     models.DEPRECATED_PTR,
-			Message:  "The ptr mechanism is deprecated and should not be used!",
+			Severity:    models.ERROR,
+			Rule:        models.DEPRECATED_PTR,
+			Fixed:       true,
+			FixedRecord: "",
+			Message:     "The ptr mechanism is deprecated and should not be used!",
 		})
 	}
 
 	if hasPtr && analysisInfo.FixRecord {
+		// AG TODO:  Add fix for this
 		analysisInfo.ParsedSpf = append(analysisInfo.ParsedSpf[:ptr_index], analysisInfo.ParsedSpf[ptr_index+1:]...)
 	}
 

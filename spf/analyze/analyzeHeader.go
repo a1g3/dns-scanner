@@ -29,24 +29,30 @@ func (c *headerAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Ana
 
 	if len(headers) == 0 {
 		errors = append(errors, models.AnalyzerResults{
-			Severity: models.ERROR,
-			Rule:     models.NO_HEADER,
-			Message:  "No valid SPF header found!",
+			Severity:    models.ERROR,
+			Rule:        models.NO_HEADER,
+			Fixed:       false,
+			FixedRecord: "",
+			Message:     "No valid SPF header found!",
 		})
 	} else if len(headers) > 1 {
 		errors = append(errors, models.AnalyzerResults{
-			Severity: models.ERROR,
-			Rule:     models.MULTIPLE_HEADERS,
-			Message:  "Multiple SPF headers found!",
+			Severity:    models.ERROR,
+			Rule:        models.MULTIPLE_HEADERS,
+			Fixed:       false,
+			FixedRecord: "",
+			Message:     "Multiple SPF headers found!",
 		})
 	}
 
 	if len(headers) != 0 {
 		if headers[0].index != 0 {
 			errors = append(errors, models.AnalyzerResults{
-				Severity: models.ERROR,
-				Rule:     models.HEADER_NOT_FIRST,
-				Message:  "SPF header must be first!",
+				Severity:    models.ERROR,
+				Rule:        models.HEADER_NOT_FIRST,
+				Fixed:       false,
+				FixedRecord: "",
+				Message:     "SPF header must be first!",
 			})
 		}
 	}
