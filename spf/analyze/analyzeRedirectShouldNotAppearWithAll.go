@@ -34,7 +34,6 @@ func (c *redirectShouldNotAppearWithAllAnalyzer) Execute(analysisInfo *models.An
 	}
 
 	if len(allHeaders) != 0 && len(redirectHeaders) != 0 {
-		// AG TODO:  Add fix for this
 		errors = append(errors, models.AnalyzerResults{
 			Severity:    models.ERROR,
 			Rule:        models.ALL_WITH_REDIRECT,
@@ -42,6 +41,14 @@ func (c *redirectShouldNotAppearWithAllAnalyzer) Execute(analysisInfo *models.An
 			FixedRecord: "",
 			Message:     "The all mechanism cannot be present with redirect modifier!",
 		})
+
+		if analysisInfo.FixRecord {
+			// Remove all headers
+			for j := len(allHeaders) - 1; j >= 0; j-- {
+				index := allHeaders[j].index
+				analysisInfo.ParsedSpf = append(analysisInfo.ParsedSpf[:index], analysisInfo.ParsedSpf[index+1:]...)
+			}
+		}
 	}
 
 	results := append(c.next.Execute(analysisInfo), errors...)

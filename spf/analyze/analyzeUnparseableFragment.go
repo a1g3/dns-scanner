@@ -23,7 +23,6 @@ func (c *unparseableAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []model
 	}
 
 	for _, a := range headers {
-		// AG TODO:  Add fix for this
 		errors = append(errors, models.AnalyzerResults{
 			Severity:    models.WARNING,
 			Rule:        models.UNKNOWN_MECH,

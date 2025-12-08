@@ -32,7 +32,6 @@ func (c *ptrDepercatedAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []mod
 	}
 
 	if hasPtr && analysisInfo.FixRecord {
-		// AG TODO:  Add fix for this
 		analysisInfo.ParsedSpf = append(analysisInfo.ParsedSpf[:ptr_index], analysisInfo.ParsedSpf[ptr_index+1:]...)
 	}
 

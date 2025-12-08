@@ -29,12 +29,17 @@ func (c *allAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analyz
 
 	if len(headers) != 0 {
 		if headers[0].index < len(analysisInfo.ParsedSpf)-1 {
+			// Create a slice to hold items that should be moved before the modifier
+			var itemsToMove []models.ParsedSpfFragment
+
+			// Iterate over elements after the modifier_index
 			for i := headers[0].index + 1; i < len(analysisInfo.ParsedSpf); i++ {
 				switch analysisInfo.ParsedSpf[i].(type) {
 				case models.ExplanationSpfFragment, models.RedirectSpfFragment, models.UnparseableSpfFragment:
 					continue
 				default:
-					// AG TODO:  Add fix for this
+					// Add item to itemsToMove and remove from the original position
+					itemsToMove = append(itemsToMove, analysisInfo.ParsedSpf[i])
 					errors = append(errors, models.AnalyzerResults{
 						Severity:    models.WARNING,
 						Rule:        models.MECH_AFTER_ALL,
@@ -44,7 +49,14 @@ func (c *allAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analyz
 					})
 				}
 			}
+
+			// Remove the items that need to be moved from the original slice
+			analysisInfo.ParsedSpf = append(analysisInfo.ParsedSpf[:headers[0].index+1], analysisInfo.ParsedSpf[headers[0].index+1+len(itemsToMove):]...)
+
+			// Insert the items that should be moved before the modifier_index
+			analysisInfo.ParsedSpf = append(analysisInfo.ParsedSpf[:headers[0].index], append(itemsToMove, analysisInfo.ParsedSpf[headers[0].index:]...)...)
 		}
+
 		if headers[0].value.Qualifier == models.Pass {
 			errors = append(errors, models.AnalyzerResults{
 				Severity:    models.WARNING,
