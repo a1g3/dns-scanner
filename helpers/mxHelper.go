@@ -40,6 +40,14 @@ func ResolveMxRecord(client *dns.Client, dnsServer string, domain string) models
 		}
 	}
 
+	if len(mxRecord.Answer) == 0 {
+		return models.AnalyzerResults{
+			Severity: models.ERROR,
+			Rule:     models.UNRESOLVEABLE_DOMAIN,
+			Message:  fmt.Sprintf("Cannot resolve MX record for domain \"%s\"", fqdn),
+		}
+	}
+
 	for _, a := range mxRecord.Answer {
 		switch answer := a.(type) {
 		case *dns.MX:

@@ -29,13 +29,11 @@ func ResolveARecord(client *dns.Client, dnsServer string, domain string) models.
 	aRecord, _, _ := client.Exchange(aMsg, dnsServer)
 	aaaaRecord, _, _ := client.Exchange(aaaaMsg, dnsServer)
 
-	print(fqdn + "\n")
-
 	if aRecord == nil && aaaaRecord == nil {
 		return models.AnalyzerResults{
 			Severity: models.ERROR,
 			Rule:     models.UNRESOLVEABLE_DOMAIN,
-			Message:  fmt.Sprintf("Error for A and AAAA record"),
+			Message:  "Error for A and AAAA record",
 		}
 	}
 
@@ -43,10 +41,14 @@ func ResolveARecord(client *dns.Client, dnsServer string, domain string) models.
 		if aRecord.Rcode != dns.RcodeSuccess {
 			hasARecord = false
 		} else {
-			for _, a := range aRecord.Answer {
-				switch answer := a.(type) {
-				case *dns.A:
-					aSpf.Ips = append(aSpf.Ips, answer.A)
+			if len(aRecord.Answer) == 0 {
+				hasARecord = false
+			} else {
+				for _, a := range aRecord.Answer {
+					switch answer := a.(type) {
+					case *dns.A:
+						aSpf.Ips = append(aSpf.Ips, answer.A)
+					}
 				}
 			}
 		}
@@ -56,10 +58,14 @@ func ResolveARecord(client *dns.Client, dnsServer string, domain string) models.
 		if aaaaRecord.Rcode != dns.RcodeSuccess {
 			hasAAAARecord = false
 		} else {
-			for _, a := range aaaaRecord.Answer {
-				switch answer := a.(type) {
-				case *dns.AAAA:
-					aSpf.Ips = append(aSpf.Ips, answer.AAAA)
+			if len(aaaaRecord.Answer) == 0 {
+				hasAAAARecord = false
+			} else {
+				for _, a := range aaaaRecord.Answer {
+					switch answer := a.(type) {
+					case *dns.AAAA:
+						aSpf.Ips = append(aSpf.Ips, answer.AAAA)
+					}
 				}
 			}
 		}

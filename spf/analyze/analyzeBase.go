@@ -22,7 +22,7 @@ func (c *baseAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analy
 		errors = append(errors, models.AnalyzerResults{
 			Severity:    models.INFO,
 			Rule:        models.FIXED_RECORD,
-			Fixed:       true,
+			Fixed:       analysisInfo.FixRecord,
 			FixedRecord: result,
 			Message:     "",
 		})

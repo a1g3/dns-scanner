@@ -26,7 +26,7 @@ func (c *unparseableAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []model
 		errors = append(errors, models.AnalyzerResults{
 			Severity:    models.WARNING,
 			Rule:        models.UNKNOWN_MECH,
-			Fixed:       true,
+			Fixed:       analysisInfo.FixRecord,
 			FixedRecord: "",
 			Message:     fmt.Sprintf("Unknown fragment \"%s\"", a.Raw),
 		})

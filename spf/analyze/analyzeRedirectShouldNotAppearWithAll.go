@@ -37,7 +37,7 @@ func (c *redirectShouldNotAppearWithAllAnalyzer) Execute(analysisInfo *models.An
 		errors = append(errors, models.AnalyzerResults{
 			Severity:    models.ERROR,
 			Rule:        models.ALL_WITH_REDIRECT,
-			Fixed:       true,
+			Fixed:       analysisInfo.FixRecord,
 			FixedRecord: "",
 			Message:     "The all mechanism cannot be present with redirect modifier!",
 		})

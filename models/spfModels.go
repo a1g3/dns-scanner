@@ -71,6 +71,9 @@ type ASpfFragment struct {
 }
 
 func (all ASpfFragment) ToString() string {
+	if all.Contents == "" {
+		return fmt.Sprintf("%sa", qualifierToString(all.Qualifier))
+	}
 	return fmt.Sprintf("%sa:%s", qualifierToString(all.Qualifier), all.Contents)
 }
 
@@ -80,6 +83,9 @@ type MxSpfFragment struct {
 }
 
 func (mx MxSpfFragment) ToString() string {
+	if mx.Contents == "" {
+		return fmt.Sprintf("%smx", qualifierToString(mx.Qualifier))
+	}
 	return fmt.Sprintf("%smx:%s", qualifierToString(mx.Qualifier), mx.Contents)
 }
 

@@ -86,8 +86,9 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 
 	validation := analyze.AnalyzeSpf(analysisInfo)
 	number := 0
+	var itemsToRemove []int
 
-	for _, a := range info {
+	for index, a := range info {
 		switch txt := a.(type) {
 		case models.PtrSpfFragment:
 			number = number + 1
@@ -107,6 +108,10 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 				mxRec := helpers.ResolveMxRecord(client, dnsServer, aDomain)
 				switch v := mxRec.(type) {
 				case models.AnalyzerResults:
+					if analysisInfo.FixRecord {
+						itemsToRemove = append(itemsToRemove, index)
+						v.Fixed = true
+					}
 					validation = append(validation, v)
 				case models.MxHelperModel:
 					mxSpf = append(mxSpf, v)
@@ -133,20 +138,36 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 				aRecord, _, _ := client.Exchange(aMsg, dnsServer)
 
 				if aRecord == nil {
-					validation = append(validation, models.AnalyzerResults{
+					v := models.AnalyzerResults{
 						Severity: models.WARNING,
 						Rule:     models.UNRESOLVEABLE_DOMAIN,
 						Message:  fmt.Sprintf("Domain \"%s\" does not exist", fqdn),
-					})
+					}
+
+					if analysisInfo.FixRecord {
+						itemsToRemove = append(itemsToRemove, index)
+						v.Fixed = true
+					}
+
+					validation = append(validation, v)
+
 					continue
 				}
 
 				if aRecord.Rcode != dns.RcodeSuccess {
-					validation = append(validation, models.AnalyzerResults{
+					v := models.AnalyzerResults{
 						Severity: models.WARNING,
 						Rule:     models.UNRESOLVEABLE_DOMAIN,
 						Message:  fmt.Sprintf("Domain \"%s\" does not exist", fqdn),
-					})
+					}
+
+					if analysisInfo.FixRecord {
+						itemsToRemove = append(itemsToRemove, index)
+						v.Fixed = true
+					}
+
+					validation = append(validation, v)
+
 					continue
 				}
 
@@ -177,6 +198,10 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 				record := helpers.ResolveARecord(client, dnsServer, aDomain)
 				switch v := record.(type) {
 				case models.AnalyzerResults:
+					if analysisInfo.FixRecord {
+						itemsToRemove = append(itemsToRemove, index)
+						v.Fixed = true
+					}
 					validation = append(validation, v)
 				case models.ASpf:
 					aSpf = append(aSpf, v)
@@ -185,6 +210,22 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 				}
 			}
 			number = number + 1
+		}
+	}
+
+	for i := len(itemsToRemove) - 1; i >= 0; i-- {
+		idx := itemsToRemove[i]
+		info = append(info[:idx], info[idx+1:]...)
+	}
+
+	for i, _ := range validation {
+		if validation[i].Rule == models.FIXED_RECORD {
+			result := ""
+			for _, a := range info {
+				result += a.ToString() + " "
+			}
+			result = strings.TrimSpace(result)
+			validation[i].FixedRecord = result
 		}
 	}
 

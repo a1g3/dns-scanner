@@ -25,7 +25,7 @@ func (c *ptrDepercatedAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []mod
 		errors = append(errors, models.AnalyzerResults{
 			Severity:    models.ERROR,
 			Rule:        models.DEPRECATED_PTR,
-			Fixed:       true,
+			Fixed:       analysisInfo.FixRecord,
 			FixedRecord: "",
 			Message:     "The ptr mechanism is deprecated and should not be used!",
 		})

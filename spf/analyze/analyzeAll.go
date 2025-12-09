@@ -43,7 +43,7 @@ func (c *allAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []models.Analyz
 					errors = append(errors, models.AnalyzerResults{
 						Severity:    models.WARNING,
 						Rule:        models.MECH_AFTER_ALL,
-						Fixed:       true,
+						Fixed:       analysisInfo.FixRecord,
 						FixedRecord: "",
 						Message:     "Mechanisms after all will be ignored.",
 					})

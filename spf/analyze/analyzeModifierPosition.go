@@ -27,7 +27,7 @@ func (c *modifiedPositionAnalyzer) Execute(analysisInfo *models.AnalysisInfo) []
 				errors = append(errors, models.AnalyzerResults{
 					Severity: models.WARNING,
 					Rule:     models.MECH_AFTER_MODIFIER,
-					Fixed:    true,
+					Fixed:    analysisInfo.FixRecord,
 					Message:  "Mechanisms should not appear after explanation or redirect modifiers.",
 				})
 				break
