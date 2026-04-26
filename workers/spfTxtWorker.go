@@ -245,7 +245,15 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 		if a.ContainsMacros {
 			parsedRecord.Includes = append(parsedRecord.Includes, models.SpfResult{Domain: a.Contents, Raw: a.Raw, NumberOfLookups: 0, Validation: []models.AnalyzerResults{}})
 		} else {
-			parsedRecord.Includes = append(parsedRecord.Includes, nsLookup(client, dnsServer, dnsType, a.Contents, domains, false))
+			err, lookup := nsLookup(client, dnsServer, dnsType, a.Contents, domains, false)
+
+			// AG TODO: Handle fixing circular references and unresolveable domains here
+			if err.Severity != models.OK {
+				parsedRecord.Validation = append(parsedRecord.Validation, err)
+				continue
+			}
+
+			parsedRecord.Includes = append(parsedRecord.Includes, lookup)
 		}
 	}
 
@@ -253,7 +261,15 @@ func parseSpfRecord(client *dns.Client, dnsServer string, dnsType uint16, domain
 		if a.ContainsMacros {
 			parsedRecord.Redirects = append(parsedRecord.Redirects, models.SpfResult{Domain: a.Domain, Raw: a.Raw, NumberOfLookups: 0, Validation: []models.AnalyzerResults{}})
 		} else {
-			parsedRecord.Redirects = append(parsedRecord.Redirects, nsLookup(client, dnsServer, dnsType, a.Domain, domains, false))
+			err, lookup := nsLookup(client, dnsServer, dnsType, a.Domain, domains, false)
+
+			// AG TODO: Handle fixing circular references and unresolveable domains here
+			if err.Severity != models.OK {
+				parsedRecord.Validation = append(parsedRecord.Validation, err)
+				continue
+			}
+
+			parsedRecord.Redirects = append(parsedRecord.Redirects, lookup)
 		}
 	}
 
@@ -269,55 +285,42 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func nsLookup(client *dns.Client, dnsServer string, dnsType uint16, domain string, domains []string, fixErrors bool) models.SpfResult {
+// Change this function to return an error or an SPF Result
+func nsLookup(client *dns.Client, dnsServer string, dnsType uint16, domain string, domains []string, fixErrors bool) (models.AnalyzerResults, models.SpfResult) {
 	m := new(dns.Msg)
+	foundSpf := false
+	spfTxt := ""
 	fqdn := dns.Fqdn(domain)
+
 	m.SetQuestion(fqdn, dnsType)
 	m.RecursionDesired = true
 
-	result := models.SpfResult{
-		Raw:        "",
-		Domain:     domain,
-		Redirects:  []models.SpfResult{},
-		Includes:   []models.SpfResult{},
-		Validation: []models.AnalyzerResults{},
-	}
-
 	if contains(domains, fqdn) {
-		result.Validation = append(result.Validation, models.AnalyzerResults{
+		return models.AnalyzerResults{
 			Severity: models.ERROR,
 			Rule:     models.CIRCULAR_REFERENCE,
 			Message:  fmt.Sprintf("Circular reference detected with domain %s", domain),
-		})
-
-		return result
+		}, models.SpfResult{}
 	}
 
 	r, _, err := client.Exchange(m, dnsServer)
 	if r == nil {
 		total_number_of_failed_lookups = total_number_of_failed_lookups + 1
-		result.Validation = append(result.Validation, models.AnalyzerResults{
+		return models.AnalyzerResults{
 			Severity: models.ERROR,
 			Rule:     models.UNRESOLVEABLE_DOMAIN,
 			Message:  fmt.Sprintf("Error: %s", err.Error()),
-		})
-
-		return result
+		}, models.SpfResult{}
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
 		total_number_of_failed_lookups = total_number_of_failed_lookups + 1
-		result.Validation = append(result.Validation, models.AnalyzerResults{
+		return models.AnalyzerResults{
 			Severity: models.ERROR,
 			Rule:     models.UNRESOLVEABLE_DOMAIN,
 			Message:  fmt.Sprintf("No SPF records found for domain \"%s\" for type %d", fqdn, dnsType),
-		})
-
-		return result
+		}, models.SpfResult{}
 	}
-
-	foundSpf := false
-	spfTxt := ""
 
 	// Stuff must be in the answer section
 	for _, a := range r.Answer {
@@ -326,7 +329,6 @@ func nsLookup(client *dns.Client, dnsServer string, dnsType uint16, domain strin
 		case *dns.TXT:
 			txtString := strings.Join(txt.Txt, "")
 			if strings.HasPrefix(txtString, "v=spf1") {
-				result.Raw = txtString
 				foundSpf = true
 				spfTxt = txtString
 			}
@@ -334,18 +336,16 @@ func nsLookup(client *dns.Client, dnsServer string, dnsType uint16, domain strin
 	}
 
 	if !foundSpf {
-		result.Validation = append(result.Validation, models.AnalyzerResults{
+		return models.AnalyzerResults{
 			Severity: models.ERROR,
 			Rule:     models.UNRESOLVEABLE_DOMAIN,
 			Message:  fmt.Sprintf("No SPF records found for domain \"%s\" for type %d", fqdn, dnsType),
-		})
-
-		return result
+		}, models.SpfResult{}
 	}
 
 	domains = append(domains, fqdn)
 
-	return parseSpfRecord(client, dnsServer, dnsType, domain, spfTxt, domains, fixErrors)
+	return models.AnalyzerResults{}, parseSpfRecord(client, dnsServer, dnsType, domain, spfTxt, domains, fixErrors)
 }
 
 func (c *spfTxtWorker) SetNext(worker models.IDNSWorker) {

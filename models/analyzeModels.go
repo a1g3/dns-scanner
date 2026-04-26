@@ -33,6 +33,7 @@ const (
 type ValidationSeverity int
 
 const (
+	OK      ValidationSeverity = 0
 	ERROR   ValidationSeverity = 1
 	WARNING ValidationSeverity = 2
 	INFO    ValidationSeverity = 3
