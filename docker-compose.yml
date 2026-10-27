@@ -1,0 +1,53 @@
+services:
+  dnsscan-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dns-scanner:latest
+
+    ports:
+      - "10000:10000"
+    
+    volumes:
+      - ./resolv.conf:/etc/custom_resolv.conf:ro
+
+    environment:
+      - DNSSCAN_RESOLV_PATH=/etc/custom_resolv.conf
+    
+    restart: unless-stopped
+
+  db:
+    image: dhi.io/postgres:18-debian
+    container_name: postgres-db
+    restart: always
+     
+    environment:
+      - POSTGRES_USER_FILE=/run/secrets/db_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - POSTGRES_DB=securegov
+      - PGDATA=/var/lib/postgresql/18/data
+
+    secrets:
+      - db_user
+      - db_password
+
+    volumes:
+      # Ensure data persistence matches your exact PGDATA environment variable
+      - pg_data:/var/lib/postgresql/18/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/db_user) -d securegov"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pg_data:
+    driver: local
+
+secrets:
+  db_user:
+    file: ./secrets/db_user.txt
+  db_password:
+    file: ./secrets/db_password.txt
