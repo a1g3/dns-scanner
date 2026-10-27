@@ -1,0 +1,6 @@
+[submodule "loader/dotgov-data"]
+	path = loader/dotgov-data
+	url = https://github.com/cisagov/dotgov-data
+[submodule "loader/govt-urls"]
+	path = loader/govt-urls
+	url = https://github.com/GSA/govt-urls

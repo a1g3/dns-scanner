@@ -1,9 +1,9 @@
 services:
-  dnsscan-app:
+  dnsscanner-api:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: dns-scanner:latest
+      dockerfile: ./src/Dockerfile
+    image: dnsscanner-api:latest
 
     ports:
       - "10000:10000"
@@ -18,7 +18,7 @@ services:
 
   db:
     image: dhi.io/postgres:18-debian
-    container_name: postgres-db
+    container_name: db
     restart: always
      
     environment:
@@ -31,9 +31,12 @@ services:
       - db_user
       - db_password
 
+    ports:
+      - "5432:5432"
+
     volumes:
-      # Ensure data persistence matches your exact PGDATA environment variable
-      - pg_data:/var/lib/postgresql/18/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg_data:/var/lib/postgresql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/db_user) -d securegov"]
@@ -42,12 +45,72 @@ services:
       retries: 5
       start_period: 10s
 
+  dnsscaner-runner:
+    build:
+      context: .
+      dockerfile: ./runner/Dockerfile
+    image: dnsscanner-runner:latest
+
+    profiles:
+      - scan
+
+    environment:
+      - DNSSCANNER_API_HOST=http://dnsscanner-api:10000
+      - DNSSCANNER_CURR_SCAN=2025-12-02
+      - DNSSCANNER_DB_USER=/run/secrets/db_user
+      - DNSSCANNER_DB_PASSWORD=/run/secrets/db_password
+      - DNSSCANNER_DB_HOST=db
+
+    restart: unless-stopped
+
+    secrets:
+      - db_user
+      - db_password
+
+    depends_on:
+      db:
+        condition: service_healthy
+      dnsscanner-api:
+        condition: service_started
+
+  dnsscaner-loader:
+    build:
+      context: .
+      dockerfile: ./loader/Dockerfile
+    image: dnsscanner-loader:latest
+
+    profiles:
+      - load
+
+    environment:
+      - DNSSCANNER_CURR_SCAN=2025-12-02
+      - DNSSCANNER_PREV_SCAN=2025-04-02
+      - DNSSCANNER_DB_USER=/run/secrets/db_user
+      - DNSSCANNER_DB_PASSWORD=/run/secrets/db_password
+      - DNSSCANNER_DB_HOST=db
+      - DNSSCANNER_DOTGOV_FILE=current-full.csv
+      - DNSSCANNER_GSA_FILE=1_govt_urls_full.csv
+
+    volumes:
+      - ./loader/gov-urls:/data/gsa:ro
+      - ./loader/dotgov-data:/data/dotgov:ro
+
+    restart: unless-stopped
+
+    secrets:
+      - db_user
+      - db_password
+
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pg_data:
     driver: local
 
 secrets:
   db_user:
-    file: ./secrets/db_user.txt
+    file: ./database/secrets/db_user.txt
   db_password:
-    file: ./secrets/db_password.txt
+    file: ./database/secrets/db_password.txt
