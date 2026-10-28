@@ -1,11 +1,18 @@
 import csv
 import datetime
 import json
+import os
 import psycopg2
 from psycopg2 import sql
 import argparse
 import logging
 
+
+def get_secret(secret_path):
+  if os.path.exists(secret_path):
+    with open(secret_path, "r") as f:
+      return f.read().strip()
+  return os.environ.get(secret_name)
 
 def updateImportLog(domains, curr, prev, dotGovOnly):
     curr.execute(sql.SQL('SELECT "Domain" FROM public."ImportLog" where "ImportLog"."LastSeen" is NULL;'))
@@ -128,7 +135,7 @@ def importDotgov(dotgov_file_path, connection_string, importlog, prev):
                     type = "Local"
                 elif row[1] == "County" or row[1] == "County - Election":
                     type = "County"
-                elif row[1] == "Federal - Executive" or row[1] == "Federal - Judicial" or row[1] == "Federal - Legislative":
+                elif row[1] == "Federal - Executive" or row[1] == "Federal - Judicial" or row[1] == "Federal - Legislative" or row[1] == "Federal":
                     type = "Federal"
                 elif row[1] == "State" or row[1] == "State or territory" or row[1] == "State or territory - Election":
                     type = "State"
@@ -161,8 +168,9 @@ def importDotgov(dotgov_file_path, connection_string, importlog, prev):
     conn.close()
 
 def main():
-    db_user = os.getenv('DNSSCANNER_DB_USER', 'research')
-    db_password = os.getenv('DNSSCANNER_DB_PASSWORD', 'CHANGEME!!!!')
+    db_user = get_secret(os.getenv('DNSSCANNER_DB_USER', 'research'))
+    db_password = get_secret(os.getenv('DNSSCANNER_DB_PASSWORD', 'CHANGEME!!!!'))
+
     db_host = os.getenv('DNSSCANNER_DB_HOST', 'db')
     conn = f'dbname=securegov user={db_user} password={db_password} host={db_host}'
 
@@ -172,9 +180,13 @@ def main():
     dotgov_file = os.getenv('DNSSCANNER_DOTGOV_FILE', 'current-full.csv')
     gsa_file = os.getenv('DNSSCANNER_GSA_FILE', '1_govt_urls_full.csv')
 
-    logging.basicConfig(filename='import.log', filemode='a', level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
+    #logging.basicConfig(filename='import.log', filemode='a', level=logging.DEBUG)
 
     importDotgov(f'/data/dotgov/{dotgov_file}', conn, curr, prev)
     importGSA(f'/data/gsa/{gsa_file}', conn, curr, prev)
 
     logging.shutdown()
+
+if __name__ == "__main__":
+    main()

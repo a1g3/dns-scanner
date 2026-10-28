@@ -2,16 +2,16 @@ FROM dhi.io/golang:1.27-dev AS build-stage
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY ./src/go.mod ./src/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY ./src .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /dns-scanner .
 
 FROM dhi.io/static:20250419-debian13 AS runtime-stage
 
-WORKDIR /
+WORKDIR .
 
 COPY --from=build-stage /dns-scanner /dns-scanner
 

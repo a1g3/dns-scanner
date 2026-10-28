@@ -35,7 +35,7 @@ services:
       - "5432:5432"
 
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
       - pg_data:/var/lib/postgresql
 
     healthcheck:
@@ -92,10 +92,8 @@ services:
       - DNSSCANNER_GSA_FILE=1_govt_urls_full.csv
 
     volumes:
-      - ./loader/gov-urls:/data/gsa:ro
+      - ./loader/govt-urls:/data/gsa:ro
       - ./loader/dotgov-data:/data/dotgov:ro
-
-    restart: unless-stopped
 
     secrets:
       - db_user
