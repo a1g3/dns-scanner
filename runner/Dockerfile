@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir pipenv
 
-COPY Pipfile Pipfile.lock ./
+COPY ./runner/Pipfile ./runner/Pipfile.lock ./
 
 ENV PIPENV_VENV_IN_PROJECT=1
 
@@ -17,7 +17,7 @@ FROM dhi.io/python:3.14-debian
 WORKDIR /app
 
 COPY --from=builder /app/.venv /app/.venv
-COPY main.py .
+COPY ./runner/main.py .
 
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"

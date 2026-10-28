@@ -7,8 +7,15 @@ from threading import Thread
 from psycopg2 import sql
 import random
 import time
+import os
 
 SCANNER_TEXT = os.getenv('DNSSCANNER_CURR_SCAN', 'Scan')
+
+def get_secret(value):
+    if os.path.exists(value):
+        with open(value, "r") as f:
+            return f.read().strip()
+    return value
 
 class ScannerThread(Thread):
     
@@ -27,8 +34,8 @@ class ScannerThread(Thread):
 
 def main():
     # Connect to your postgres DB
-    db_user = os.getenv('DNSSCANNER_DB_USER', 'research')
-    db_password = os.getenv('DNSSCANNER_DB_PASSWORD', 'CHANGEME!!!!')
+    db_user = get_secret(os.getenv('DNSSCANNER_DB_USER', 'research'))
+    db_password = get_secret(os.getenv('DNSSCANNER_DB_PASSWORD', 'CHANGEME!!!!'))
     db_host = os.getenv('DNSSCANNER_DB_HOST', 'db')
 
     conn = psycopg2.connect(f'dbname=securegov user={db_user} password={db_password} host={db_host}')
@@ -60,15 +67,19 @@ def main():
 
 def call_api(scanner, domain):
     try:
-        # sending get request and saving the response as response object
-	api_host = os.getenv('DNSSCANNER_API_HOST', 'http://dnsscanner-api:10000')
-        r = requests.get(url = f"{api_url}/api/{domain}", verify=False, timeout=60)
-        
-        # extracting data in json format
+        api_host = os.getenv(
+            "DNSSCANNER_API_HOST",
+            "http://dnsscanner-api:10000",
+        )
+        r = requests.get(
+            url=f"{api_host}/api/{domain}",
+            verify=False,
+            timeout=60,
+        )
+        r.raise_for_status()
         data = r.json()
 
         print(f"RUNNER: {domain} SUCCESS from {scanner}")
-
         return json.dumps(data)
     except Exception as er:
         print(f"ERROR: Cannot run scanner on {domain} from {scanner}")
