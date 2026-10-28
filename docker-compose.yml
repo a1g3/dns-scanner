@@ -16,6 +16,21 @@ services:
     
     restart: unless-stopped
 
+  dnsscanner-api-health:
+    image: dhi.io/curl:8-debian-dev
+    network_mode: "service:dnsscanner-api"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    entrypoint: ["sleep", "infinity"]  
+    deploy:
+      resources:
+        limits:
+          memory: 32M  # Minimal resource usage
+
   db:
     image: dhi.io/postgres:18-debian
     container_name: db
@@ -70,8 +85,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      dnsscanner-api:
-        condition: service_started
+      dnsscanner-api-health:
+        condition: service_healthy
 
   dnsscaner-loader:
     build:

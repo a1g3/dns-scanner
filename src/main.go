@@ -32,7 +32,12 @@ func scanDns(w http.ResponseWriter, r *http.Request) {
 func handleRequests() {
 	log.Println("STARTING API")
 	myRouter := mux.NewRouter().StrictSlash(true)
-	// replace http.HandleFunc with myRouter.HandleFunc
+
+        myRouter.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("pong"))
+	}).Methods(http.MethodGet)
+	
+        // replace http.HandleFunc with myRouter.HandleFunc
 	myRouter.HandleFunc("/api/{domain}", scanDns)
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
