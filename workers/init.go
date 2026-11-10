@@ -10,7 +10,7 @@ import (
 // dns server from config. write once on startup
 var ResolverConfig *dns.ClientConfig = nil
 
-const ENV_RESOLV_PATH= "DNSSCAN_RESOLV_PATH"
+const ENV_RESOLV_PATH = "DNSSCAN_RESOLV_PATH"
 const DEFAULT_RESOLV_PATH = "resolv.conf"
 
 func Init() error {
@@ -21,7 +21,7 @@ func Init() error {
 			ENV_RESOLV_PATH,
 			DEFAULT_RESOLV_PATH,
 		)
-	path = DEFAULT_RESOLV_PATH
+		path = DEFAULT_RESOLV_PATH
 	}
 
 	cfg, err := dns.ClientConfigFromFile(path)
