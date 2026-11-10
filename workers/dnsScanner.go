@@ -4,13 +4,11 @@ import (
 	"dnsScanner/models"
 	"fmt"
 	"net"
-	"os"
 
 	"github.com/miekg/dns"
 )
 
 func ScanDns(domain string) []models.DnsWorkerResults {
-	config, _ := dns.ClientConfigFromFile(os.Getenv("DNSSCAN_RESOLV_PATH"))
 	c := new(dns.Client)
 	c.Net = "tcp"
 
@@ -42,7 +40,7 @@ func ScanDns(domain string) []models.DnsWorkerResults {
 	host := models.WorkerInformation{
 		Hostname:  dns.Fqdn(domain),
 		Client:    c,
-		DnsServer: net.JoinHostPort(config.Servers[0], config.Port),
+		DnsServer: net.JoinHostPort(ResolverConfig.Servers[0], ResolverConfig.Port),
 	}
 
 	return ns.execute(host)
