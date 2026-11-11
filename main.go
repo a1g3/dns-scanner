@@ -202,5 +202,10 @@ func mapMxRecordsToMxSpfScanResult(records []models.MxRecord) []models.MxRecordS
 }
 
 func main() {
+	err := workers.Init()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
 	handleRequests()
 }
